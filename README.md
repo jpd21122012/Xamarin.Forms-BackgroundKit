@@ -13,6 +13,13 @@ The way the UI customization in Xamarin.Forms should be
 * Test Ripple on iOS
 * Add iOS Screenshots
 
+### ScreenShots
+
+#### Android
+<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/background_android.png" width="280" />
+
+#### iOS (coming soon...)
+
 BackgroundKit Provides a consistent way for adding Background to your views.  
 What is supported out of the box: 
 
@@ -155,10 +162,3 @@ Everything you need to do is coming from XAML!
     <Label Text="I am inside a stack layout" />
 </StackLayout>
 ```
-
-### ScreenShots
-
-#### Android
-<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/background_android.png" width="280" />
-
-#### iOS (coming soon...)
