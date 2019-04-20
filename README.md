@@ -1,11 +1,18 @@
 # Xamarin.Forms-BackgroundKit
 The way the UI customization in Xamarin.Forms should be
 
+* [Screenshots](#Screenshots)
 * [What is Supported](#What-is-supported)
 * [Ripple Support](#Ripple-Support)
 * [Setup](#Setup)
 * [Usage](#Usage)
-* [Screenshots](#Screenshots)
+
+### ScreenShots
+
+#### Android
+<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/background_android.png" width="280" />|<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/dev/art/background_borders_android.png" width="280" />
+
+#### iOS (coming soon...)
 
 ### TODOs:
 * Add to nuget
@@ -156,9 +163,3 @@ Everything you need to do is coming from XAML!
 </StackLayout>
 ```
 
-### ScreenShots
-
-#### Android
-<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/background_android.png" width="280" />|<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/dev/art/background_borders_android.png" width="280" />
-
-#### iOS (coming soon...)
