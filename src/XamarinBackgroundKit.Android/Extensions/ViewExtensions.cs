@@ -1,34 +1,34 @@
 ﻿using Android.Content;
 using Android.Content.Res;
-using Android.Graphics;
-using Android.Graphics.Drawables;
-using Android.Graphics.Drawables.Shapes;
 using Android.Support.Design.Card;
 using Android.Support.Design.Chip;
 using Android.Views;
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using Android.Graphics.Drawables;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 using XamarinBackgroundKit.Abstractions;
 using XamarinBackgroundKit.Android.Renderers;
 using XamarinBackgroundKit.Controls;
-using XamarinBackgroundKit.Extensions;
-using AGradientType = Android.Graphics.Drawables.GradientType;
 using AView = Android.Views.View;
 using Color = Xamarin.Forms.Color;
 using IBorderElement = XamarinBackgroundKit.Abstractions.IBorderElement;
-using XGradientType = XamarinBackgroundKit.Controls.GradientType;
 using XView = Xamarin.Forms.View;
 
 namespace XamarinBackgroundKit.Android.Extensions
 {
     public static class ViewExtensions
 	{
-		#region Border
+        public static void SetColor(this AView view, Color color)
+        {
+	        if (color == Color.Default) return;
+	        
+	        view.GetGradientDrawable().Paint.Color = color.ToAndroid();
+        }
 
-		public static void SetBorder(this Chip view, Context context, IBorderElement borderElement)
+        #region Border
+
+        public static void SetBorder(this Chip view, Context context, IBorderElement borderElement)
 		{
 			view.ChipStrokeColor = ColorStateList.ValueOf(borderElement.BorderColor.ToAndroid());
 			view.ChipStrokeWidth = (int)context.ToPixels(borderElement.BorderWidth);
@@ -41,55 +41,45 @@ namespace XamarinBackgroundKit.Android.Extensions
 
 		public static void SetBorder(this MaterialCardView view, Context context, Color color, double width)
 		{
-			view.StrokeColor = color == Color.White ? new global::Android.Graphics.Color(254, 254, 254) : color.ToAndroid();
+			if (color != Color.Default)
+			{
+				view.StrokeColor = color == Color.White 
+					? new global::Android.Graphics.Color(254, 254, 254) 
+					: color.ToAndroid();
+			}
+			
 			view.StrokeWidth = (int)context.ToPixels(width);
 		}
 
-		public static void SetBorder(this AView view, Context context, VisualElement element, IBorderElement borderElement)
-		{
-			view.SetBorder(context, element, borderElement.BorderColor, borderElement.BorderWidth);
+		public static void SetBorder(this AView view, IBorderElement borderElement)
+        {
+            view.SetBorder(borderElement.BorderColor, borderElement.BorderWidth);
+            view.SetDashedBorder(borderElement.DashWidth, borderElement.DashGap);
+            view.SetBorderGradients(borderElement.BorderGradients, borderElement.BorderAngle);
 		}
 
-		public static void SetBorder(this AView view, Context context, VisualElement element, Color color, double width)
+		private static void SetBorder(this AView view, Color color, double width)
 		{
-			var borderWidth = (int)context.ToPixels(width);
+            view.GetGradientDrawable().SetStroke(width, color);
+        }
 
-			switch (view.Background)
-			{
-				case GradientDrawable gradientDrawable:
-					gradientDrawable.SetStroke(borderWidth, ColorStateList.ValueOf(color.ToAndroid()));
-					break;
-                case GradientStrokeDrawable gradientStrokeDrawable:
-                    gradientStrokeDrawable.SetStroke(borderWidth, color);
-                    break;
-                case PaintDrawable paintDrawable:
-                    var paint = paintDrawable.Paint;
-                    paint.AntiAlias = true;
-                    paint.Color = color.ToAndroid();
-                    paint.StrokeWidth = borderWidth;
-                    paint.SetStyle(Paint.Style.Stroke);
-                    if (element is IGradientElement gradientElement)
-                    {
-                        view.SetPaintGradient(gradientElement.Gradients, gradientElement.Angle);
-                    }
-                    break;
-				default:
-					view.Background?.Dispose();
-					var newGradientDrawable = new GradientDrawable();
-					newGradientDrawable.SetStroke(borderWidth, ColorStateList.ValueOf(color.ToAndroid()));
-					newGradientDrawable.SetColor(element.BackgroundColor.ToAndroid());
-					view.Background = newGradientDrawable;
-					break;
-			}
-		}
+		private static void SetBorderGradients(this AView view, IList<GradientStop> gradients, float angle)
+        {
+            view.GetGradientDrawable().SetBorderGradient(gradients, angle);
+        }
 
-		#endregion
+		private static void SetDashedBorder(this AView view, double dashWidth, double dashGap)
+        {
+            view.GetGradientDrawable().SetDashedBorder(dashWidth, dashGap);
+        }
 
-		#region Corner Radius
+        #endregion
 
-		public static void SetCornerRadius(this AView view, Context context, VisualElement element, ICornerElement cornerElement, Color? color = null)
+        #region Corner Radius
+
+        public static void SetCornerRadius(this AView view, ICornerElement cornerElement)
 		{
-            view.SetCornerRadius(context, element, cornerElement.CornerRadius, color);
+            view.SetCornerRadius(cornerElement.CornerRadius);
         }
 
 		public static void SetCornerRadius(this MaterialCardView view, Context context, ICornerElement cornerElement)
@@ -102,44 +92,9 @@ namespace XamarinBackgroundKit.Android.Extensions
 			view.ChipCornerRadius = context.ToPixels(cornerElement.CornerRadius.TopLeft);
 		}
 
-		public static void SetCornerRadius(this AView view, Context context, VisualElement element, CornerRadius cornerRadius, Color? color)
+		public static void SetCornerRadius(this AView view, CornerRadius cornerRadius)
 		{
-            if (view == null || cornerRadius == new CornerRadius(0d)) return;
-
-            var isUniform = cornerRadius.IsAllRadius() && !cornerRadius.IsEmpty();
-
-            var uniformCornerRadius = context.ToPixels(cornerRadius.TopLeft);
-            var cornerRadii = cornerRadius.ToRadii(context.Resources.DisplayMetrics.Density);
-
-            switch (view.Background)
-            {
-                case GradientDrawable gradientDrawable:
-                    if (isUniform) gradientDrawable.SetCornerRadius(uniformCornerRadius);
-                    else gradientDrawable.SetCornerRadii(cornerRadii);
-                    break;
-                case PaintDrawable paintDrawable:
-                    if (isUniform) paintDrawable.SetCornerRadius(uniformCornerRadius);
-                    else paintDrawable.SetCornerRadii(cornerRadii);
-                    break;
-                default:
-                    view.Background?.Dispose();
-
-                    var newGradientDrawable = new GradientDrawable();
-                    if (isUniform) newGradientDrawable.SetCornerRadius(uniformCornerRadius);
-                    else newGradientDrawable.SetCornerRadii(cornerRadii);
-
-                    if (color != null)
-                    {
-                        newGradientDrawable.SetColor(color.Value.ToAndroid());
-                    }
-                    else if (element?.BackgroundColor != null)
-                    {
-                        newGradientDrawable.SetColor(element.BackgroundColor.ToAndroid());
-                    }
-
-                    view.Background = newGradientDrawable;
-                    break;
-            }
+            view.GetGradientDrawable().SetCornerRadius(cornerRadius);
         }
 
 		#endregion
@@ -148,80 +103,12 @@ namespace XamarinBackgroundKit.Android.Extensions
 
 		public static void SetGradient(this AView view, IGradientElement gradientElement)
 		{
-			view.SetGradient(gradientElement.GradientType, gradientElement.Gradients, gradientElement.Angle);
+			view.SetGradient(gradientElement.Gradients, gradientElement.Angle);
 		}
 
-		public static void SetGradient(this AView view, XGradientType type, IList<GradientStop> gradients, float angle)
-		{
-			if (!gradients.Any()) return;
-
-			var colors = gradients.Select(x => (int)x.Color.ToAndroid()).ToArray();
-			var positions = gradients.Select(x => x.Offset).ToArray();
-
-            /* If positions are set, then go for PaintDrawable */
-            if (!positions.All(x => Math.Abs(x) < Math.Pow(10, -10)))
-            {
-                view.SetPaintGradient(gradients, angle);
-                return;
-            }
-
-			var constructNew = true;
-			GradientDrawable gradientDrawable;
-
-			/* Reuse existing one */
-			if (view.Background is GradientDrawable oldGradientDrawable)
-			{
-				constructNew = false;
-				gradientDrawable = oldGradientDrawable;
-			}
-			else
-			{
-				gradientDrawable = new GradientDrawable();
-			}
-            
-			gradientDrawable.SetColors(colors);
-			gradientDrawable.SetOrientation(angle);
-
-			switch (type)
-			{
-				case XGradientType.Radial:
-					gradientDrawable.SetGradientType(AGradientType.RadialGradient);
-					gradientDrawable.SetGradientRadius(view.Context.Resources.DisplayMetrics.WidthPixels);
-					break;
-				default:
-					gradientDrawable.SetShape(ShapeType.Rectangle);
-					gradientDrawable.SetGradientType(AGradientType.LinearGradient);
-					break;
-			}
-
-            if (!constructNew) return;
-            
-            view.Background?.Dispose();
-            view.Background = gradientDrawable;
-        }
-
-        private static void SetPaintGradient(this AView view, IList<GradientStop> gradients, float angle)
+        private static void SetGradient(this AView view, IList<GradientStop> gradients, float angle)
         {
-            var constructNew = true;
-            GradientStrokeDrawable gradientStrokeDrawable;
-
-            if (view.Background is GradientStrokeDrawable oldGradientStrokeDrawable)
-            {
-                constructNew = false;
-                gradientStrokeDrawable = oldGradientStrokeDrawable;
-            }
-            else
-            {
-                gradientStrokeDrawable = new GradientStrokeDrawable();
-            }
-
-            gradientStrokeDrawable.Shape = new RectShape();
-            gradientStrokeDrawable.SetGradient(gradients, angle);
-
-            if (!constructNew) return;
-
-            view.Background?.Dispose();
-            view.Background = gradientStrokeDrawable;
+            view.GetGradientDrawable().SetGradient(gradients, angle);
         }
 
 		#endregion
@@ -302,5 +189,18 @@ namespace XamarinBackgroundKit.Android.Extensions
 		}
 
 		#endregion
+
+        public static GradientStrokeDrawable GetGradientDrawable(this AView view)
+        {
+            switch (view.Background)
+            {
+                case GradientStrokeDrawable oldGradientStrokeDrawable:
+                    return oldGradientStrokeDrawable;
+                case RippleDrawable rippleDrawable:
+                    return rippleDrawable.GetDrawable(0) as GradientStrokeDrawable;
+            }
+            
+            return null;
+        }
 	}
 }

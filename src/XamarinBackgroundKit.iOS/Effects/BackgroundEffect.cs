@@ -14,7 +14,7 @@ namespace XamarinBackgroundKit.iOS.Effects
 {
     public class BackgroundEffectiOS : BasePlatformEffect<BackgroundEffect, Element, UIView>
     {
-        private IDisposable _frameObserver;
+        private IDisposable _layoutChangeObserver;
 
         private Background _background;
         private MaterialVisualElementTracker _tracker;
@@ -26,28 +26,47 @@ namespace XamarinBackgroundKit.iOS.Effects
             SetTracker();
 
             _background = BackgroundEffect.GetBackground(Element);
+            _background.SetBinding(BindableObject.BindingContextProperty,
+                new Binding("BindingContext", source: Element));
 
             UpdateBackground(null, _background);
 
             if (View?.Layer == null) return;
 
-            _frameObserver = View.AddObserver(
-                "frame",
-                NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.OldNew,
-                c => _tracker?.InvalidateLayer());
+            if (Element is Layout)
+            {
+                _layoutChangeObserver = View.Layer.AddObserver(
+                    "bounds",
+                    NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.OldNew,
+                    c => _tracker?.InvalidateLayer());
+            }
+            else
+            {
+                _layoutChangeObserver = View.AddObserver(
+                    "frame",
+                    NSKeyValueObservingOptions.Initial | NSKeyValueObservingOptions.OldNew,
+                    c => _tracker?.InvalidateLayer());
+            }
         }
 
         protected override void OnDetached()
         {
-            base.OnDetached();
-
-            if (View != null && _frameObserver is NSObject frameObserverObject)
+            if (_layoutChangeObserver is NSObject layoutChangeObserverObject)
             {
-                View.RemoveObserver(frameObserverObject, "frame");
+                if (Element is Layout)
+                {
+                    View?.Layer?.RemoveObserver(layoutChangeObserverObject, "bounds");
+                }
+                else
+                {
+                    View?.RemoveObserver(layoutChangeObserverObject, "frame");
+                }
             }
-
+            
             _tracker?.Dispose();
-            _frameObserver?.Dispose();
+            _layoutChangeObserver?.Dispose();
+            
+            base.OnDetached();
         }
 
         protected override void OnElementPropertyChanged(PropertyChangedEventArgs args)
@@ -59,6 +78,8 @@ namespace XamarinBackgroundKit.iOS.Effects
                 var oldBackground = _background;
 
                 _background = BackgroundEffect.GetBackground(Element);
+                _background.SetBinding(BindableObject.BindingContextProperty,
+                    new Binding("BindingContext", source: Element));
 
                 UpdateBackground(oldBackground, _background);
             }
