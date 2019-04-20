@@ -16,7 +16,8 @@ The way the UI customization in Xamarin.Forms should be
 ### ScreenShots
 
 #### Android
-<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/background_android.png" width="280" />
+<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/contentViewAndroid.gif" width="280" /> | 
+<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/searchBarAndroid.gif" width="280" />
 
 #### iOS (coming soon...)
 
