@@ -18,21 +18,23 @@
 
 #### iOS (coming soon...)
 
-BackgroundKit Provides a consistent way for adding Background to your views.  
-What is supported out of the box: 
-
 ### What was hard
 
 Mixing Gradient on border with gradient on background was a really painful challenge. On Android I had to deal with custom Drawables and CALayers on iOS. Also, on Android, making elevation and clipping work for different radius on each corner was a trial and error pain. An outline provider has been made in order to support cornerRadii. GradientStrokeDrawable extends GradientDrawable and draws a custom paint(to replicate the border) into the shape of the view. On iOS, the GradientStrokeLayer also extends CAGradientLayer and it has a ShadowLayer and another one CAGradientLayer for the border. Clipping on iOS is done through a CAShapeLayer.
 
 ### What is used for the Background
 
+BackgroundKit Provides a consistent way for adding Background to your views.  
+What is supported out of the box: 
+
 | Background | Android | iOS |
 | ------ | ------ | ------ |
 | Elevation | Android.Views.View.Elevation | MDCShadowLayer
+| Ripple | Android.Graphics.Drawable.RippleDrawable | MDCInkViewController |
+| CornerRadius | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
 | Gradients | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
 | Border | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
-| CornerRadius | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
+| Gradient Border | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
 
 ### Native Views (FastRenderers Pattern on Android)
 
