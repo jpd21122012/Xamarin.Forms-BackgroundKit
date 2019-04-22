@@ -7,31 +7,30 @@ The way the UI customization in Xamarin.Forms should be
 * [Setup](#Setup)
 * [Usage](#Usage)
 
-### TODOs:
-* Add to nuget
-* Test IsCircle and MDCShadowLayer on iOS
-* Test Ripple on iOS
-* Add iOS Screenshots
-
 ### ScreenShots
 
 #### Android
 <img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/contentViewAndroid.gif" width="280" /> | 
-<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/searchBarAndroid.gif" width="280" />
+<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/searchBarAndroid.gif" width="280" /> | 
+<img src="https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/art/cornerRadiiElevation.png" width="280" />
 
 #### iOS (coming soon...)
 
 BackgroundKit Provides a consistent way for adding Background to your views.  
 What is supported out of the box: 
 
+### What was hard
+
+Mixing Gradient on border with gradient on background was a really painful challenge. On Android I had to deal with custom Drawables and CALayers on iOS. Also, on Android, making elevation and clipping work for different radius on each corner was a trial and error pain. An outline provider has been made in order to support cornerRadii. GradientStrokeDrawable extends GradientDrawable and draws a custom paint(to replicate the border) into the shape of the view. On iOS, the GradientStrokeLayer also extends CAGradientLayer and it has a ShadowLayer and another one CAGradientLayer for the border. Clipping on iOS is done through a CAShapeLayer.
+
 ### What is used for the Background
 
 | Background | Android | iOS |
 | ------ | ------ | ------ |
 | Elevation | Android.Views.View.Elevation | MDCShadowLayer
-| Gradients | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | CAGradientLayer |
-| Border | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | CAGradientLayer |
-| CornerRadius | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | CAGradientLayer / Mask when not uniform radius |
+| Gradients | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
+| Border | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
+| CornerRadius | [GradientStrokeDrawable](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.Android/Renderers/GradientStrokeDrawable.cs) | [GradientStrokeLayer](https://github.com/ChasakisD/Xamarin.Forms-BackgroundKit/blob/master/src/XamarinBackgroundKit.iOS/Renderers/GradientStrokeLayer.cs) |
 
 ### Native Views (FastRenderers Pattern on Android)
 
@@ -49,33 +48,60 @@ What is supported out of the box:
 | MaterialVisualElementTracker | MaterialVisualElementTracker |  
 
 ### What is supported
-| Xamarin.Forms View | Android | iOS |
+
+#### Xamarin.Forms Layouts
+
+| Xamarin.Forms Layouts | Android | iOS |
 | ------ | ------ | ------ |
-| StackLayout | Yes | Yes |
 | AbsoluteLayout | Yes | Yes |
-| Grid | Yes | Yes |
-| RelativeLayout | Yes | Yes |
-| ContentView | Yes | Yes |
-| Button | Yes | Yes |
-| Entry | Yes | Yes |
-| Picker | Yes | Yes |
-| Label | Yes | Yes |
-| Switch | Yes | Yes |
-| BoxView | Yes | Yes |
-| ListView | Yes | Yes |
+| CarouselView | Yes | Yes |
 | CollectionView | Yes | Yes |
+| ContentView | Yes | Yes |
+| FlexLayout | Yes | Yes |
+| Frame | Yes | Yes |
+| Grid | Yes | Yes |
+| ListView | Yes | Yes |
+| RelativeLayout | Yes | Yes |
+| ScrollView | Yes | Yes |
+| StackLayout | Yes | Yes |
+
+#### Xamarin.Forms Views
+
+| Xamarin.Forms Views | Android | iOS |
+| ------ | ------ | ------ |
+| ActivityIndicator | Yes | Yes |
+| BoxView | Yes | No at the moment |
+| Button | Yes | Yes |
+| DatePicker | Yes | Yes |
+| Editor | Yes | Yes |
+| Entry | Yes | Yes |
+| Image | Yes | Yes |
+| ImageButton | Yes | Yes |
+| Label | Yes | Yes |
+| Picker | Yes | Yes |
+| ProgressBar | Yes | Yes |
+| SearchBar | Yes | Yes |
+| Slider | Yes | Yes |
+| Stepper | Yes | Yes |
+| Switch | Yes | Yes |
+| TimePicker | Yes | Yes |
+| WebView | Yes | Yes |
+
+#### Custom Views from BackgroundKit
 
 | BackgroundKit View | Android | iOS |
 | ------ | ------ | ------ |
 | MaterialCard | Yes | Yes |
 | MaterialContentView | Yes | Yes |
 
+PS.: Material Components on Android and iOS are not supporting changing the background, so gradients and gradient borders are not supported when Visual="Material" is used.
+
 ### Ripple Support
 
 | BackgroundKit View | Android | iOS |
 | ------ | ------ | ------ |
-| MaterialCard | Yes | Yes |
-| MaterialContentView | No at the moment | No at the moment |
+| MaterialCard | Yes through RippleDrawable | Yes through RippleDrawable |
+| MaterialContentView | Yes through MDCInkViewController | Yes through MDCInkViewController |
 
 ## Setup
 #### Xamarin.Android
@@ -103,6 +129,13 @@ XamarinBackgroundKit.Android.BackgroundKit.Init();
 | `Gradients` | `IList<GradientStop>` | The gradients that will be used for the background |
 | `BorderColor` | `Color` | The border color of the background |
 | `BorderWidth` | `double` | The border width of the background |
+| `DashGap` | `double` | Adds dashed border to the background. Dash gap specifies the pixels that the gap of the dash will be |
+| `DashWidth` | `double` | Adds dashed border to the background. Dash width specifies the pixels that the width of a filled line will be |
+| `BorderAngle` | `double` | The gradient angle of the border of the background | The -360 to 360 angle of the gradient |
+| `BorderGradientType` | `GradientType` | The type of gradient of the border of the background | Linear or Radial. Currently Linear is supported only |
+| `BorderGradients` | `IList<GradientStop>` | The gradients that will be used for the border of the background |
+| `IsRippleEnabled` | `bool` | Whether or not the ripple will be enabled |
+| `RippleColor` | `Color` | The ripple color of the background |
 
 #### Material Content View
 | Property | Type | Description |
